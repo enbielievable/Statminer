@@ -172,14 +172,14 @@ def proc_col(col):
         out_binary=cv2.threshold(out_gray, 0, 255, cv2.THRESH_OTSU )[1] 
 
 
-        scale_percent = 300 # percent of original size
+        scale_percent = 150 # percent of original size
         width = int(out_binary.shape[1] * scale_percent / 100)
         height = int(out_binary.shape[0] * scale_percent / 100)
         dim = (width, height)
 
         # # resize image
-        resized = cv2.resize(out_gray, dim, interpolation = cv2.INTER_AREA)    
-        # resized = cv2.resize(out_binary, dim, interpolation = cv2.INTER_AREA)    
+        # resized = cv2.resize(out_gray, dim, interpolation = cv2.INTER_AREA)    
+        resized = cv2.resize(out_binary, dim, interpolation = cv2.INTER_AREA)    
 
         #   Creating kernel
         kernel = np.ones((2, 2), np.uint8)
@@ -189,8 +189,8 @@ def proc_col(col):
         # im = cv2.erode(resized, kernel, iterations=1) 
         # im = cv2.bitwise_not(out_gray)
         # im = out_gray
-        im = out_gray
-        # im = resized
+        # im = out_gray
+        im = resized
         # im = out_binary
         # im = out_img
         # im = rows[i]
@@ -221,7 +221,7 @@ def proc_team(team_cols):
         print("##########")
         proc_col(c)
 
-proc_team(teams[0])
+proc_team(teams[1])
 
 
 
