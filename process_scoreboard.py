@@ -123,39 +123,165 @@ def get_rows_from_column(img):
 # healing: 640 - 740
 # mit: 740 - 840
 # y should always be 60
+
 img = cv2.imread("/home/evie/Projects/Statminer/test_videos/extracted_frames/test_column.png")
+# im = img
+
+# row, col = im.shape[:2]
+# bottom = im[row-2:row, 0:col]
+# mean = cv2.mean(bottom)[0]
+
+# border_size = 10
+# border = cv2.copyMakeBorder(
+#     im,
+#     top=border_size,
+#     bottom=border_size,
+#     left=border_size,
+#     right=border_size,
+#     borderType=cv2.BORDER_CONSTANT,
+#     value=[mean, mean, mean]
+# )
+
+# cv2.imshow('image', im)
+# cv2.imshow('bottom', bottom)
+# cv2.imshow('border', border)
+# cv2.waitKey(0)
+
+
+
+
+
 rows = get_rows_from_column(img)
+rows.append(img)
 read = []
-for i in range (6):
-    out_img = cv2.bitwise_not(rows[i])
-    # out_img = rows[i]
-    image=cv2.cvtColor(out_img,cv2.COLOR_BGR2GRAY)
-    se=cv2.getStructuringElement(cv2.MORPH_RECT , (8,8))
-    bg=cv2.morphologyEx(image, cv2.MORPH_DILATE, se)
-    out_gray=cv2.divide(image, bg, scale=255)
+
+def proc_col(col):
+    rows = get_rows_from_column(col)
+    rows.append(col)
+    for i in range (7):
+        out_img = cv2.bitwise_not(rows[i])
+        # out_img = rows[i]
+        # image=cv2.cvtColor(rows[i],cv2.COLOR_BGR2GRAY)
+
+        image=cv2.cvtColor(out_img,cv2.COLOR_BGR2GRAY)
+        se=cv2.getStructuringElement(cv2.MORPH_RECT , (8,8))
+        bg=cv2.morphologyEx(image, cv2.MORPH_DILATE, se)
+        out_gray=cv2.divide(image, bg, scale=255)
+
+
+        out_binary=cv2.threshold(out_gray, 0, 255, cv2.THRESH_OTSU )[1] 
+
+
+        scale_percent = 300 # percent of original size
+        width = int(out_binary.shape[1] * scale_percent / 100)
+        height = int(out_binary.shape[0] * scale_percent / 100)
+        dim = (width, height)
+
+        # # resize image
+        resized = cv2.resize(out_gray, dim, interpolation = cv2.INTER_AREA)    
+        # resized = cv2.resize(out_binary, dim, interpolation = cv2.INTER_AREA)    
+
+        #   Creating kernel
+        kernel = np.ones((2, 2), np.uint8)
+
+        # Using cv2.erode() method 
+        # im = cv2.erode(out_gray, kernel, iterations=1) 
+        # im = cv2.erode(resized, kernel, iterations=1) 
+        # im = cv2.bitwise_not(out_gray)
+        # im = out_gray
+        im = out_gray
+        # im = resized
+        # im = out_binary
+        # im = out_img
+        # im = rows[i]
+        row, col = im.shape[:2]
+        bottom = im[row-2:row, 0:col]
+        mean = cv2.mean(bottom)[0]
+
+        border_size = 1
+        border = cv2.copyMakeBorder(
+        im,
+        top=border_size,
+        bottom=border_size,
+        left=border_size,
+        right=border_size,
+        borderType=cv2.BORDER_CONSTANT,
+        value=[0, 0, 0]
+        # value=[255,255,255]
+        )
+        print(str(i) + ": " + pytesseract.image_to_string(border))
+        if i == 6:
+            cv2.imshow(str(i),  border)
+
+
+
+teams = cut_out_columns()
+def proc_team(team_cols):
+    for c in team_cols:
+        print("##########")
+        proc_col(c)
+
+proc_team(teams[0])
+
+
+
+# for i in range (7):
+#     out_img = cv2.bitwise_not(rows[i])
+#     # out_img = rows[i]
+#     # image=cv2.cvtColor(rows[i],cv2.COLOR_BGR2GRAY)
+
+#     image=cv2.cvtColor(out_img,cv2.COLOR_BGR2GRAY)
+#     se=cv2.getStructuringElement(cv2.MORPH_RECT , (8,8))
+#     bg=cv2.morphologyEx(image, cv2.MORPH_DILATE, se)
+#     out_gray=cv2.divide(image, bg, scale=255)
 
     
-    out_binary=cv2.threshold(out_gray, 0, 255, cv2.THRESH_OTSU )[1] 
+#     out_binary=cv2.threshold(out_gray, 0, 255, cv2.THRESH_OTSU )[1] 
 
   
-    scale_percent = 200 # percent of original size
-    width = int(out_binary.shape[1] * scale_percent / 100)
-    height = int(out_binary.shape[0] * scale_percent / 100)
-    dim = (width, height)
+#     scale_percent = 300 # percent of original size
+#     width = int(out_binary.shape[1] * scale_percent / 100)
+#     height = int(out_binary.shape[0] * scale_percent / 100)
+#     dim = (width, height)
   
-# # resize image
-    resized = cv2.resize(out_binary, dim, interpolation = cv2.INTER_AREA)    
+# # # resize image
+#     resized = cv2.resize(out_gray, dim, interpolation = cv2.INTER_AREA)    
+#     # resized = cv2.resize(out_binary, dim, interpolation = cv2.INTER_AREA)    
 
-#   Creating kernel
-    kernel = np.ones((2, 2), np.uint8)
+# #   Creating kernel
+#     kernel = np.ones((2, 2), np.uint8)
   
-    # Using cv2.erode() method 
-    im = cv2.erode(resized, kernel, iterations=1) 
+#     # Using cv2.erode() method 
+#     # im = cv2.erode(out_gray, kernel, iterations=1) 
+#     im = cv2.erode(resized, kernel, iterations=1) 
+#     # im = cv2.bitwise_not(out_gray)
+#     # im = out_gray
+#     # im = out_gray
+#     im = resized
+#     # im = out_binary
+#     # im = out_img
+#     # im = rows[i]
+#     row, col = im.shape[:2]
+#     bottom = im[row-2:row, 0:col]
+#     mean = cv2.mean(bottom)[0]
+
+#     border_size = 1
+#     border = cv2.copyMakeBorder(
+#     im,
+#     top=border_size,
+#     bottom=border_size,
+#     left=border_size,
+#     right=border_size,
+#     borderType=cv2.BORDER_CONSTANT,
+#     value=[0, 0, 0]
+#     # value=[255,255,255]
+#     )
 
 
 
-    print(pytesseract.image_to_string(im))
+#     print(str(i) + ": " + pytesseract.image_to_string(border))
 
-    cv2.imshow(str(i),  im)
-    cv2.waitKey(0)
+#     cv2.imshow(str(i),  border)
 
+cv2.waitKey(0)
+cv2.destroyAllWindows()
